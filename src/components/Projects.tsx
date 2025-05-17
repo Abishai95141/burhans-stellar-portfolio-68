@@ -1,7 +1,15 @@
 
 import React, { useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ExternalLink, Github } from 'lucide-react';
 import { motion } from 'framer-motion';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 
 interface Project {
   id: number;
@@ -14,7 +22,7 @@ interface Project {
 }
 
 const Projects = () => {
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [activeProject, setActiveProject] = useState<number>(0);
 
   const projects: Project[] = [
     {
@@ -52,7 +60,8 @@ const Projects = () => {
     }
   ];
 
-  const containerVariants = {
+  // Mobile view uses a carousel
+  const mobileSectionVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -61,25 +70,42 @@ const Projects = () => {
       }
     }
   };
-
-  const cardVariants = {
-    hidden: { y: 50, opacity: 0 },
-    visible: { 
-      y: 0, 
+  
+  // Desktop view uses a different animation approach
+  const desktopSectionVariants = {
+    hidden: { opacity: 0 },
+    visible: {
       opacity: 1,
+      transition: { 
+        duration: 0.5,
+        staggerChildren: 0.2 
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
       transition: {
         type: "spring",
         stiffness: 100,
-        damping: 12
+        damping: 10
       }
     }
   };
 
   return (
-    <section id="projects" className="section">
-      <div className="container mx-auto">
+    <section id="projects" className="section py-24">
+      <motion.div 
+        className="container mx-auto px-4"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+      >
         <motion.h2 
-          className="text-3xl md:text-4xl font-bold text-center mb-16"
+          className="text-3xl md:text-5xl font-bold text-center mb-16"
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -87,93 +113,205 @@ const Projects = () => {
         >
           My <span className="neon-text">Projects</span>
         </motion.h2>
-
+        
+        {/* Mobile & Tablet View - Carousel */}
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8"
-          variants={containerVariants}
+          className="md:hidden"
+          variants={mobileSectionVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.1 }}
+          viewport={{ once: true, amount: 0.2 }}
         >
-          {projects.map((project, index) => (
-            <motion.div 
-              key={project.id}
-              className={`glass overflow-hidden transform transition-all duration-300 ${
-                hoverIndex === index ? 'scale-[1.02] neon-border' : ''
-              }`}
-              onMouseEnter={() => setHoverIndex(index)}
-              onMouseLeave={() => setHoverIndex(null)}
-              variants={cardVariants}
-              whileHover={{ 
-                y: -10,
-                boxShadow: "0 10px 25px -5px rgba(14, 165, 233, 0.3)"
-              }}
-            >
-              {/* Project Image/Gradient */}
-              <motion.div 
-                className={`h-48 ${project.image} flex items-center justify-center`}
-                initial={{ scale: 1 }}
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.3 }}
-              >
-                <motion.h3 
-                  className="text-2xl font-bold text-white text-center px-4"
-                  initial={{ y: 0 }}
-                  whileHover={{ y: -5 }}
-                  transition={{ duration: 0.3 }}
+          <Carousel className="w-full">
+            <CarouselContent>
+              {projects.map((project) => (
+                <CarouselItem key={project.id}>
+                  <motion.div 
+                    variants={itemVariants}
+                    className="glass rounded-xl overflow-hidden"
+                    whileHover={{ 
+                      y: -10,
+                      boxShadow: "0 10px 25px -5px rgba(14, 165, 233, 0.3)"
+                    }}
+                  >
+                    {/* Project Image/Gradient */}
+                    <div className={`h-48 ${project.image} flex items-center justify-center`}>
+                      <h3 className="text-2xl font-bold text-white text-center px-4">
+                        {project.title}
+                      </h3>
+                    </div>
+                    
+                    <div className="p-6">
+                      <p className="text-gray-300 mb-4">
+                        {project.description}
+                      </p>
+                      
+                      <div className="mb-6 flex flex-wrap gap-2">
+                        {project.tools.map((tool, i) => (
+                          <span 
+                            key={i}
+                            className="text-xs bg-secondary text-gray-300 px-2 py-1 rounded"
+                          >
+                            {tool}
+                          </span>
+                        ))}
+                      </div>
+                      
+                      <div className="flex space-x-4">
+                        <a 
+                          href={project.github} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-sm text-gray-300 hover:text-neon-blue transition-colors"
+                        >
+                          GitHub <Github size={14} />
+                        </a>
+                        
+                        {project.demo && (
+                          <a 
+                            href={project.demo} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-sm text-gray-300 hover:text-neon-blue transition-colors"
+                          >
+                            Live Demo <ExternalLink size={14} />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="left-2" />
+            <CarouselNext className="right-2" />
+          </Carousel>
+        </motion.div>
+        
+        {/* Desktop View - Interactive Display */}
+        <motion.div 
+          className="hidden md:grid grid-cols-5 gap-8"
+          variants={desktopSectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          {/* Project Navigation */}
+          <motion.div 
+            className="col-span-1"
+            variants={itemVariants}
+          >
+            <div className="space-y-4 sticky top-24">
+              {projects.map((project, index) => (
+                <motion.div
+                  key={project.id}
+                  className={`p-3 rounded-lg cursor-pointer transition-all duration-300 ${
+                    activeProject === index 
+                      ? 'glass neon-border' 
+                      : 'hover:bg-white/5'
+                  }`}
+                  onClick={() => setActiveProject(index)}
+                  whileHover={{ x: 5 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  {project.title}
-                </motion.h3>
+                  <h3 className={`font-medium ${
+                    activeProject === index ? 'text-neon-blue' : 'text-gray-400'
+                  }`}>
+                    {project.title}
+                  </h3>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+          
+          {/* Project Details */}
+          <motion.div 
+            className="col-span-4 glass rounded-xl overflow-hidden"
+            variants={itemVariants}
+            key={activeProject}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ 
+              type: "spring", 
+              stiffness: 100, 
+              damping: 12 
+            }}
+          >
+            <div className={`h-60 ${projects[activeProject].image} flex items-center justify-center`}>
+              <motion.h3 
+                className="text-3xl font-bold text-white text-center px-4"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                {projects[activeProject].title}
+              </motion.h3>
+            </div>
+            
+            <div className="p-8">
+              <motion.p 
+                className="text-gray-300 mb-6 text-lg"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                {projects[activeProject].description}
+              </motion.p>
+              
+              <motion.div 
+                className="mb-8 flex flex-wrap gap-3"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4 }}
+              >
+                {projects[activeProject].tools.map((tool, i) => (
+                  <motion.span 
+                    key={i}
+                    className="text-sm bg-secondary text-gray-300 px-3 py-1.5 rounded-full"
+                    whileHover={{ 
+                      scale: 1.05,
+                      backgroundColor: "rgba(14, 165, 233, 0.2)",
+                    }}
+                  >
+                    {tool}
+                  </motion.span>
+                ))}
               </motion.div>
-
-              {/* Project Content */}
-              <div className="p-6">
-                <p className="text-gray-300 mb-4">
-                  {project.description}
-                </p>
+              
+              <motion.div 
+                className="flex space-x-6"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                <motion.a 
+                  href={projects[activeProject].github} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-gray-300 hover:text-neon-blue transition-colors"
+                  whileHover={{ x: 5 }}
+                >
+                  <Github size={18} />
+                  View on GitHub
+                </motion.a>
                 
-                <div className="mb-6 flex flex-wrap gap-2">
-                  {project.tools.map((tool, toolIndex) => (
-                    <motion.span 
-                      key={toolIndex}
-                      className="text-xs bg-secondary text-gray-300 px-2 py-1 rounded"
-                      initial={{ scale: 1 }}
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                    >
-                      {tool}
-                    </motion.span>
-                  ))}
-                </div>
-                
-                <div className="flex space-x-4">
+                {projects[activeProject].demo && (
                   <motion.a 
-                    href={project.github} 
+                    href={projects[activeProject].demo} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-sm text-gray-300 hover:text-neon-blue transition-colors"
+                    className="flex items-center gap-2 text-gray-300 hover:text-neon-blue transition-colors"
                     whileHover={{ x: 5 }}
                   >
-                    GitHub <ArrowRight size={14} />
+                    <ExternalLink size={18} />
+                    Live Demo
                   </motion.a>
-                  
-                  {project.demo && (
-                    <motion.a 
-                      href={project.demo} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-sm text-gray-300 hover:text-neon-blue transition-colors"
-                      whileHover={{ x: 5 }}
-                    >
-                      Live Demo <ArrowRight size={14} />
-                    </motion.a>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          ))}
+                )}
+              </motion.div>
+            </div>
+          </motion.div>
         </motion.div>
-      </div>
+      </motion.div>
     </section>
   );
 };
