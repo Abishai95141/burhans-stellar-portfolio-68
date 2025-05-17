@@ -10,6 +10,7 @@ import Certifications from '@/components/Certifications';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import ParticlesBackground from '@/components/ParticlesBackground';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Index = () => {
   useEffect(() => {
@@ -17,18 +18,27 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen">
-      <ParticlesBackground />
-      <Navbar />
-      <Hero />
-      <About />
-      <Projects />
-      <Skills />
-      <Experience />
-      <Certifications />
-      <Contact />
-      <Footer />
-    </div>
+    <AnimatePresence>
+      <div className="min-h-screen">
+        <ParticlesBackground />
+        <Navbar />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Hero />
+          <About />
+          <Projects />
+          <Skills />
+          <Experience />
+          <Certifications />
+          <Contact />
+          <Footer />
+        </motion.div>
+      </div>
+    </AnimatePresence>
   );
 };
 
